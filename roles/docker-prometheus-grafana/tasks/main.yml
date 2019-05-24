@@ -44,6 +44,6 @@
     name: prometheus
     state: started
     image: prom/prometheus:latest
-    volumes: /data/prometheus:/prometheus[:rw]
+    volumes: /data/prometheus:/prometheus:rw
     command: ["--config.file=/prometheus/config/prometheus.yml", "--storage.tsdb.path=/prometheus/database"]
     published_ports: 0.0.0.0:9090:9090
