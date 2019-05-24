@@ -55,3 +55,10 @@
     image: grafana/grafana:latest
     volumes: /data/grafana:/var/lib/grafana:rw
     published_ports: 0.0.0.0:3000:3000
+
+- name: Run container node_exporter
+  docker_container:
+    name: node-exporter
+    state: started
+    image: prom/node-exporter:latest
+    published_ports: 0.0.0.0:9100:9100
