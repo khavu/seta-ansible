@@ -20,7 +20,7 @@
   copy: src=prometheus.yml dest=/data/prometheus/config/prometheus.yml
 
 - name: create Grafana directory
-  file: path=/data/grafana state=directory
+  file: path=/data/grafana state=directory mode=0777
 
 # Install docker on CentOS
 - name: Installing Docker repo
@@ -47,3 +47,11 @@
     volumes: /data/prometheus:/prometheus:rw
     command: ["--config.file=/prometheus/config/prometheus.yml", "--storage.tsdb.path=/prometheus/database"]
     published_ports: 0.0.0.0:9090:9090
+
+- name: Run container Grafana
+  docker_container:
+    name: grafana
+    state: started
+    image: grafana/grafana:latest
+    volumes: /data/grafana:/var/lib/grafana:rw
+    published_ports: 0.0.0.0:3000:3000
