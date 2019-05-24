@@ -2,13 +2,13 @@
 - name: Disable SELinux
   selinux:
     state: disabled
-    
+
 # Mount EFS to server
 - name: create data directory
   file: path=/data state=directory
 
 - name: Sleep before mount EFS
-  command: "sleep 30"
+  command: "sleep 60"
 
 - name: Mount EFS to server
   mount:
