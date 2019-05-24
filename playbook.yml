@@ -3,6 +3,3 @@
   become: true
   roles:
        - docker-prometheus-grafana
-  vars:
-       iptables_enabled: "yes"
-       iptables_allowed_tcp_ports: [48248]
