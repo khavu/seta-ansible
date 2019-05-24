@@ -11,7 +11,7 @@
     state: mounted
 
 - name: create Prometheus database directory
-  file: path=/data/prometheus/database state=directory recurse=yes
+  file: path=/data/prometheus/database state=directory recurse=yes mode=0777
 
 - name: create Prometheus configure directory
   file: path=/data/prometheus/config state=directory recurse=yes
