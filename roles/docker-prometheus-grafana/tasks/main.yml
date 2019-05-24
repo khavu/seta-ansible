@@ -26,8 +26,14 @@
 - name: Installing Docker repo
   get_url: url=https://download.docker.com/linux/centos/docker-ce.repo dest=/etc/yum.repos.d/docker-ce.repo
 
-- name: "Installing docker-ce package"
-  yum: pkg=docker-ce state=present
+- name: "Installing packages"
+  yum: pkg={{item}} state=present
+  with_items:
+  - python-pip
+  - docker-ce
+
+- name: "Install docker-py"
+  pip: name=docker-py state=present
 
 - name: Start docker
   service: name=docker state=started enabled=yes
