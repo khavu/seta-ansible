@@ -1,0 +1,73 @@
+# Install packages
+- name: "Installing packages"
+  yum: pkg={{item}} state=present
+  with_items:
+  - python-pip
+  - git
+  - zip
+  - unzip
+
+- name: "Install docker-py"
+  pip: name=docker-py state=present
+
+# Add Docker repo
+- name: Installing Docker repo
+  get_url: url=https://download.docker.com/linux/centos/docker-ce.repo dest=/etc/yum.repos.d/docker-ce.repo
+
+- name: "Installing docker-ce package"
+  yum: pkg=docker-ce state=present
+
+- name: Start docker
+  service: name=docker state=started enabled=yes
+
+- name: Docker daemon.json
+  copy: src=docker-daemon.json dest=/etc/docker/daemon.json
+  notify: restart docker
+
+- name: Create docker folder
+  file: path=/root/.docker state=directory
+
+- name: Docker config.json
+  copy: src=docker-config.json dest=/root/.docker/config.json
+
+- name: Docker service
+  copy: src=docker.service dest=/usr/lib/systemd/system/docker.service
+  notify: reload systemctl docker
+
+# Deploy dockerimage advisor
+- name: Create advisor folder
+  file: path=/root/advisor/{{VERSION}}/templates state=directory recurse=yes
+
+- name: Download templates
+  get_url: url=http://58.187.9.131:8081/repository/maven-releases/vn/edu/topica/native-vn/advisor/{{VERSION}}/advisor-{{VERSION}}.zip dest=/root/advisor/{{VERSION}}/templates/env.zip
+
+- name: Unarchive templates
+  unarchive:
+    src: /root/advisor/{{VERSION}}/templates/env.zip
+    dest: /root/advisor/{{VERSION}}/templates/
+    remote_src: yes
+
+- name: fetch template file back to ansible server
+  fetch:
+    src: /root/advisor/{{VERSION}}/templates/qa.properties
+    dest: /tmp/ansible/qa-env/native-vn/advisor/{{VERSION}}/templates/qa.properties
+    flat: yes
+
+- name: Copy properties files
+  template:
+    src: /tmp/ansible/qa-env/native-vn/advisor/{{VERSION}}/templates/qa.properties
+    dest: /root/advisor/{{VERSION}}/qa_with_values.properties
+  vars:
+    DB_HOST: "{{ NATIVE_VN_QA_DB_HOST }}"
+    DB_PORT: "{{ NATIVE_VN_QA_DB_PORT }}"
+    DB_NAME: advisor
+    DB_USERNAME: advisor
+    DB_PASSWORD: advisor@topica123
+
+- name: Run container advisor
+  docker_container:
+    name: advisor
+    state: started
+    image: 58.187.9.131:48000/advisor:{{VERSION}}
+    env_file: /root/advisor/{{VERSION}}/qa_with_values.properties
+    published_ports: 0.0.0.0:10803:80
