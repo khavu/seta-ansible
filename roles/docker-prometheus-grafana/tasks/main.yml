@@ -10,6 +10,18 @@
     fstype: nfs4
     state: mounted
 
+- name: create Prometheus database directory
+  file: path=/data/prometheus/database state=directory recurse=yes
+
+- name: create Prometheus configure directory
+  file: path=/data/prometheus/config state=directory recurse=yes
+
+- name: Copy prometheus.yml
+  copy: src=prometheus.yml dest=/data/prometheus/config/prometheus.yml
+
+- name: create Grafana directory
+  file: path=/data/grafana state=directory
+
 # Install docker on CentOS
 - name: Installing Docker repo
   get_url: url=https://download.docker.com/linux/centos/docker-ce.repo dest=/etc/yum.repos.d/docker-ce.repo
@@ -19,3 +31,13 @@
 
 - name: Start docker
   service: name=docker state=started enabled=yes
+
+# Start Prometheus with docker
+- name: Run container Prometheus
+  docker_container:
+    name: prometheus
+    state: started
+    image: prom/prometheus:latest
+    volumes: /data/prometheus:/prometheus
+    command: ["--config.file=/prometheus/config/prometheus.yml", "--storage.tsdb.path=/prometheus/database"]
+    published_ports: 0.0.0.0:9090:9090
